@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Theatre Ticket Booking</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(to bottom, rgba(200, 0, 0, 0.8), rgba(255, 0, 0, 0.8)), 
+                        url('https://example.com/movie-theatre-background.jpg'); /* Replace with your image URL */
+            background-size: cover;
+            background-position: center;
+            margin: 0;
+            padding: 20px;
+            color: white;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: auto;
+            background: rgba(255, 165, 0, 0.9); /* Warm orange semi-transparent background */
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+
+        h1 {
+            text-align: center;
+            color: #fff;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            color: #fff;
+        }
+
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #218838;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        #confirmation {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .seat {
+            width: 30px;
+            height: 30px;
+            margin: 5px;
+            display: inline-block;
+            text-align: center;
+            line-height: 30px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        .available {
+            background-color: #007bff;
+            color: white;
+        }
+
+        .booked {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .selected {
+            background-color: #ffc107;
+        }
+
+        .seat-row {
+            display: flex;
+            justify-content: center;
+            margin: 10px 0;
+        }
+
+        .screen {
+            background-color: #000;
+            color: #fff;
+            text-align: center;
+            padding: 10px;
+            margin: 20px 0;
+            font-size: 20px;
+            border-radius: 5px;
+        }
+
+        .theatre-layout {
+            text-align: center;
+        }
+
+        .description-box {
+            background-color: rgba(255, 255, 255, 0.8); /* Light background for contrast */
+            color: #333; /* Dark text color */
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Book Your Movie Tickets</h1>
+        <form id="bookingForm">
+            <label for="movie">Select Movie:</label>
+            <select id="movie" required>
+                <option value="">--Select a movie--</option>
+                <option value="Inception" data-description="A thief who steals corporate secrets through the use of dream-sharing technology.">Inception</option>
+                <option value="Avatar" data-description="A paraplegic Marine dispatched to the moon Pandora on a unique mission.">Avatar</option>
+                <option value="Titanic" data-description="A seventeen-year-old aristocrat falls in love with a kind but poor artist.">Titanic</option>
+            </select>
+
+            <div id="movieDescription" class="hidden description-box"></div>
+
+            <label for="theatre">Select Theatre:</label>
+            <select id="theatre" required>
+                <option value="">--Select a theatre--</option>
+                <option value="Theatre 1">Theatre 1</option>
+                <option value="Theatre 2">Theatre 2</option>
+                <option value="Theatre 3">Theatre 3</option>
+            </select>
+
+            <label for="seatsCount">Select Number of Seats:</label>
+            <input type="number" id="seatsCount" min="1" max="5" required>
+            <button type="button" id="showSeats" disabled>Show Available Seats</button>
+        </form>
+
+        <div id="seatLayout" class="hidden theatre-layout">
+            <div class="screen">SCREEN</div>
+        </div>
+
+        <button id="bookSeats" class="hidden">Book Selected Seats</button>
+
+        <div id="confirmation" class="hidden"></div>
+    </div>
+
+    <script>
+        const seatsData = {
+            "Theatre 1": Array(30).fill(true),
+            "Theatre 2": Array(30).fill(true),
+            "Theatre 3": Array(30).fill(true)
+        };
+
+        let maxSeats = 0; // Variable to hold the maximum selectable seats
+
+        function createSeatLayout() {
+            const seatLayout = document.getElementById('seatLayout');
+            seatLayout.innerHTML = '<div class="screen">SCREEN</div>'; // Reset with screen
+
+            const rows = 5;
+            const columns = 6;
+
+            for (let i = 0; i < rows; i++) {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = 'seat-row';
+
+                for (let j = 0; j < columns; j++) {
+                    const seatIndex = i * columns + j;
+                    const seat = document.createElement('div');
+                    seat.className = seatsData[document.getElementById('theatre').value][seatIndex] ? 'seat available' : 'seat booked';
+                    seat.textContent = seatIndex + 1;
+                    seat.onclick = () => {
+                        if (seatsData[document.getElementById('theatre').value][seatIndex]) {
+                            const selectedSeats = document.querySelectorAll('.seat.selected');
+                            if (seat.classList.contains('selected')) {
+                                seat.classList.remove('selected');
+                            } else {
+                                if (selectedSeats.length < maxSeats) {
+                                    seat.classList.add('selected');
+                                } else {
+                                    alert(`You can only select up to ${maxSeats} seat(s).`);
+                                }
+                            }
+                        }
+                    };
+                    rowDiv.appendChild(seat);
+                }
+                seatLayout.appendChild(rowDiv);
+            }
+
+            document.getElementById('bookSeats').classList.remove('hidden');
+            seatLayout.classList.remove('hidden');
+        }
+
+        document.getElementById('movie').addEventListener('change', function() {
+            const selectedOption = this.options[this.selectedIndex];
+            document.getElementById('movieDescription').innerText = selectedOption.dataset.description || '';
+            document.getElementById('movieDescription').classList.remove('hidden');
+
+            // Enable the Show Available Seats button
+            document.getElementById('showSeats').disabled = !this.value;
+        });
+
+        document.getElementById('showSeats').addEventListener('click', function() {
+            const theatre = document.getElementById('theatre').value;
+            if (!theatre) {
+                alert("Please select a theatre.");
+                return;
+            }
+            maxSeats = parseInt(document.getElementById('seatsCount').value); // Set the max selectable seats
+
+            // Check available seats
+            const availableSeatsCount = seatsData[theatre].filter(seat => seat).length;
+            if (maxSeats > availableSeatsCount) {
+                alert(`You can only book up to ${availableSeatsCount} available seat(s).`);
+                return;
+            }
+
+            createSeatLayout();
+        });
+
+        document.getElementById('theatre').addEventListener('change', function() {
+            // Enable the Show Available Seats button if a movie is selected
+            document.getElementById('showSeats').disabled = !document.getElementById('movie').value;
+        });
+
+        document.getElementById('bookSeats').addEventListener('click', function() {
+            const selectedSeats = Array.from(document.querySelectorAll('.seat.selected'));
+            const seatsCount = parseInt(document.getElementById('seatsCount').value);
+
+            if (selectedSeats.length !== seatsCount) {
+                alert(`Please select exactly ${seatsCount} seat(s).`);
+                return;
+            }
+
+            const theatre = document.getElementById('theatre').value;
+            const movie = document.getElementById('movie').value;
+
+            selectedSeats.forEach(seat => {
+                const seatIndex = seat.textContent - 1; // Get seat index
+                seatsData[theatre][seatIndex] = false; // Mark as booked
+                seat.classList.remove('available', 'selected');
+                seat.classList.add('booked');
+            });
+
+            const confirmationDiv = document.getElementById('confirmation');
+            confirmationDiv.classList.remove('hidden');
+            confirmationDiv.innerHTML = `You have booked ${seatsCount} ticket(s) for "${movie}" at ${theatre}.`;
+
+            // Clear form fields
+            document.getElementById('bookingForm').reset();
+            document.getElementById('bookSeats').classList.add('hidden');
+            seatLayout.classList.add('hidden');
+            document.getElementById('movieDescription').classList.add('hidden');
+            document.getElementById('showSeats').disabled = true; // Disable button after booking
+        });
+    </script>
+</body>
+</html>
